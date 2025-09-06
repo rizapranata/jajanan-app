@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type Role = "guest" | "customer" | "admin";
+export type Role = "guest" | "user" | "admin";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -31,6 +31,10 @@ const authSlice = createSlice({
       state.role = "guest";
       state.user = null;
     },
+  },
+
+  extraReducers(builder) {
+    
   },
 });
 

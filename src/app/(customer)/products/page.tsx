@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "This is Next.js Home for TailAdmin Dashboard Template",
 };
 
-export default function Ecommerce() {
+export default function Products() {
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 space-y-6">

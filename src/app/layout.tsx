@@ -6,7 +6,7 @@ import './globals.css';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { Provider } from 'react-redux';
-import { store } from '../features/store';
+import { store } from '../store/store';
 
 const outfit = Outfit({
   subsets: ["latin"],
