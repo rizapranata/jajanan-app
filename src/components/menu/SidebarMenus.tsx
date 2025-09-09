@@ -21,12 +21,12 @@ export const SidebarMenus: Record<Role, NavItem[]> = {
     {
       icon: <GridIcon />,
       name: "Dashboard",
-      path: "/admin/dashboard",
+      path: "/",
     },
     {
       icon: <CalenderIcon />,
       name: "Manage Products",
-      path: "/admin/products",
+      path: "/products",
     },
     {
       icon: <UserCircleIcon />,
@@ -38,29 +38,18 @@ export const SidebarMenus: Record<Role, NavItem[]> = {
     {
       icon: <PackageIcon />,
       name: "Products",
-      path: "/customer/products",
+      path: "/products",
     },
     {
       icon: <ShoppingCartIcon />,
       name: "My Cart",
-      path: "/customer/cart",
+      path: "/cart",
     },
     {
       icon: <ClipboardListIcon />,
       name: "Orders",
-      path: "/customer/orders",
+      path: "/orders",
     },
   ],
-  guest: [
-    { name: "Home", path: "/", icon: <HomeIcon /> },
-    {
-      icon: <PlugInIcon />,
-      name: "Authentication",
-      subItems: [
-        { name: "Sign In", path: "/signin", pro: false },
-        { name: "Sign Up", path: "/signup", pro: false },
-      ],
-    },
-    { name: "Login", path: "/login", icon: <LogInIcon /> },
-  ],
+  guest: [{ name: "Products", path: "/products", icon: <PackageIcon /> }],
 };

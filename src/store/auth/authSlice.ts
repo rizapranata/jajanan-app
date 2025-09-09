@@ -1,42 +1,61 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserType } from "./login.types";
 
-export type Role = "guest" | "user" | "admin";
+const tokenFromStorage =
+  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+const userFromStorage =
+  typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
 interface AuthState {
+  user: UserType | null;
+  token: string | null;
   isAuthenticated: boolean;
-  role: Role;
-  user: { id: string; name: string; email: string } | null;
 }
 
 const initialState: AuthState = {
-  isAuthenticated: false,
-  role: "guest",
-  user: null,
+  user: userFromStorage ? JSON.parse(userFromStorage) : null,
+  token: tokenFromStorage,
+  isAuthenticated: !!tokenFromStorage,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login: (
+    setCredentials: (
       state,
-      action: PayloadAction<{ role: Role; user: AuthState["user"] }>
+      action: PayloadAction<{ user: UserType | null; token: string | null }>
     ) => {
-      state.isAuthenticated = true;
-      state.role = action.payload.role;
       state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = !!action.payload.token;
     },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.role = "guest";
+    clearAuth: (state) => {
       state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
     },
-  },
+    updateUser: (state, action: PayloadAction<UserType>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
+    },
+    rehydrateAuth: (state) => {
+      if (typeof window !== "undefined") {
+        try {
+          const token = localStorage.getItem("token");
+          const user = localStorage.getItem("user");
 
-  extraReducers(builder) {
-    
+          state.token = token;
+          state.user = user ? JSON.parse(user) : null;
+          state.isAuthenticated = !!token;
+        } catch (err) {
+          console.error("Failed to rehydrate auth", err);
+        }
+      }
+    },
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { setCredentials, clearAuth, updateUser, rehydrateAuth } = authSlice.actions;
 export default authSlice.reducer;

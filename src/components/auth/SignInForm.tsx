@@ -4,12 +4,42 @@ import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { useLoginMutation } from "@/store/auth/authApi";
+import { setCredentials } from "@/store/auth/authSlice";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [login, { isLoading, error }] = useLoginMutation();
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    try {
+      const res = await login({ email, password }).unwrap();
+
+      console.log("Login successful:", res);
+
+      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
+
+      // redirect sesuai role
+      if (res.data.user.role === "admin") {
+        router.push("/");
+      } else {
+        router.push("/products");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -90,7 +120,11 @@ export default function SignInForm() {
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="info@gmail.com" type="email" />
+                  <Input
+                    placeholder="info@gmail.com"
+                    type="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label>
@@ -100,6 +134,7 @@ export default function SignInForm() {
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -128,8 +163,8 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
+                  <Button className="w-full" type="button" size="sm" onClick={handleLogin}>
+                    {isLoading ? "Loading..." : "Sign In"}
                   </Button>
                 </div>
               </div>

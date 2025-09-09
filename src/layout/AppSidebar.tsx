@@ -50,7 +50,8 @@ type NavItem = {
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { role } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const role = (user?.role || "guest") as keyof typeof SidebarMenus;
   const menus = SidebarMenus[role] || SidebarMenus.guest;
   const pathname = usePathname();
 

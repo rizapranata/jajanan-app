@@ -7,13 +7,13 @@ export function middleware(req: NextRequest) {
 
   // Admin hanya boleh ke /admin/*
   if (role === "admin" && url.pathname.startsWith("/customer")) {
-    url.pathname = "/admin/dashboard";
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
   // User hanya boleh ke /customer/*
-  if (role === "user" && url.pathname.startsWith("/admin")) {
-    url.pathname = "/customer/products";
+  if (role === "user" && url.pathname.startsWith("/")) {
+    url.pathname = "/products";
     return NextResponse.redirect(url);
   }
 
