@@ -6,7 +6,7 @@ import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import React from "react";
 
-export default function CustomerLayout({
+export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -8,7 +8,7 @@ import { useLoginMutation } from "@/store/auth/authApi";
 import { setCredentials } from "@/store/auth/authSlice";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 export default function SignInForm() {
@@ -21,19 +21,15 @@ export default function SignInForm() {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  useEffect(() => {}, [email, password]);
+
   const handleLogin = async () => {
     try {
       const res = await login({ email, password }).unwrap();
-
-      console.log("Login successful:", res);
-
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
 
-      // redirect sesuai role
-      if (res.data.user.role === "admin") {
+      if (res.data.user) {
         router.push("/");
-      } else {
-        router.push("/products");
       }
     } catch (err) {
       console.error("Login failed:", err);
@@ -163,7 +159,13 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" type="button" size="sm" onClick={handleLogin}>
+                  <Button
+                    className="w-full"
+                    type="button"
+                    size="sm"
+                    disabled={email.length === 0 || password.length === 0}
+                    onClick={handleLogin}
+                  >
                     {isLoading ? "Loading..." : "Sign In"}
                   </Button>
                 </div>

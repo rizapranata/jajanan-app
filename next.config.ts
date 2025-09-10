@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: "/auth/:path*",
+        destination: "http://localhost:3000/auth/:path*", // Express backend
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -21,12 +21,12 @@ export const SidebarMenus: Record<Role, NavItem[]> = {
     {
       icon: <GridIcon />,
       name: "Dashboard",
-      path: "/",
+      path: "/admin",
     },
     {
       icon: <CalenderIcon />,
       name: "Manage Products",
-      path: "/products",
+      path: "/admin/product",
     },
     {
       icon: <UserCircleIcon />,
