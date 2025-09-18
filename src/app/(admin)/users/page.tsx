@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import React from "react";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
+import ManageUser from "@/components/users/ManageUser";
 
 export const metadata: Metadata = {
   title:
@@ -8,11 +8,14 @@ export const metadata: Metadata = {
   description: "This is Next.js Home for TailAdmin Dashboard Template",
 };
 
-export default function Products() {
+export default function User() {
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 space-y-6">
-        <RecentOrders />
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+          Users Management Page
+        </h2>
+        <ManageUser />
       </div>
     </div>
   );

@@ -18,20 +18,20 @@ type NavItem = {
 
 export const SidebarMenus: Record<Role, NavItem[]> = {
   admin: [
-    {
-      icon: <GridIcon />,
-      name: "Dashboard",
-      path: "/admin",
-    },
+    // {
+    //   icon: <GridIcon />,
+    //   name: "Dashboard",
+    //   path: "/dashboard",
+    // },
     {
       icon: <CalenderIcon />,
       name: "Manage Products",
-      path: "/admin/product",
+      path: "/manage-product",
     },
     {
       icon: <UserCircleIcon />,
-      name: "Users",
-      path: "/admin/users",
+      name: "Manage Users",
+      path: "/users",
     },
   ],
   user: [

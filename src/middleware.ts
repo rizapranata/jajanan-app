@@ -18,30 +18,40 @@ export function middleware(req: NextRequest) {
     res.headers.set("x-debug-path", url.pathname);
   }
 
-  // 🔒 Admin tidak boleh masuk ke /products/*
-  if (role === "admin" && url.pathname.startsWith("/products")) {
-    url.pathname = "/";
-    return NextResponse.redirect(url.toString());
-  }
-
-  // 🔒 User tidak boleh masuk ke /admin/*
-  if (role === "user" && url.pathname.startsWith("/admin")) {
+  // 🔒 User tidak boleh masuk ke /users/*
+  if (role === "user" && url.pathname.startsWith("/users")) {
     url.pathname = "/";
     return NextResponse.redirect(url.toString());
   }
 
   // 👤 Guest (belum login) tidak boleh masuk /admin/* atau /products/*
-  if (role === "guest") {
-    if (url.pathname.startsWith("/admin")) {
-      url.pathname = "/";
-      url.searchParams.set("debug-role", role);
-      return NextResponse.redirect(url.toString());
-    }
+  if (
+    role === "guest" &&
+    (url.pathname.startsWith("/admin") || url.pathname.startsWith("/profile"))
+  ) {
+    url.pathname = "/";
+    url.searchParams.set("debug-role", role);
+    return NextResponse.redirect(url.toString());
+  }
+
+  if (role === "guest" && url.pathname.startsWith("/users")) {
+    url.pathname = "/";
+    url.searchParams.set("debug-role", role);
+    return NextResponse.redirect(url.toString());
   }
 
   return res; // pakai res yang sudah diberi header
 }
 
+// tambahkan matcher untuk path yang butuh proteksi
 export const config = {
-  matcher: ["/admin/:path*", "/products/:path*", "/profile/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/profile",
+    "/profile/:path*",
+    "/users/:path*",
+    "/manage-product/:path*",
+    "/users",
+  ],
 };
