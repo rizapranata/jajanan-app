@@ -1,8 +1,8 @@
-
 export interface RegisterRequest {
   full_name: string;
   email: string;
   password: string;
+  role?: string;
 }
 
 export interface RegisterResponse {
@@ -37,10 +37,33 @@ export interface LoginResponse {
   };
 }
 
-export interface UserType {
-  _id:         string;
-  full_name:   string;
-  email:       string;
-  role:        string;
+export interface UsersResponse {
+  status: string;
+  data: UserData[];
+  count: number;
+}
+
+export interface UserData {
+  _id: string;
+  full_name: string;
+  email: string;
+  password: string;
+  role: string;
+  token: string[];
+  is_active: number;
+  createdAt: Date;
+  updatedAt: Date;
   user_id: number;
+  __v: number;
+}
+
+export interface UserType {
+  _id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  user_id: number;
+  is_active?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

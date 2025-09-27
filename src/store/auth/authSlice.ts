@@ -1,5 +1,5 @@
+import { UserType } from "@/types/auth";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserType } from "./login.types";
 
 const tokenFromStorage =
   typeof window !== "undefined" ? localStorage.getItem("token") : null;

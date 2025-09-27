@@ -7,8 +7,10 @@ import { useRegisterMutation } from "@/store/auth/authApi";
 import { setCredentials } from "@/store/auth/authSlice";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import Button from "../ui/button/Button";
+import CustomModalAlert from "../modals/CustomModalAlert";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,25 +22,25 @@ export default function SignUpForm() {
   const [register, { isLoading, error }] = useRegisterMutation();
   const dispatch = useDispatch();
   const router = useRouter();
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {}, [firstName, lastName, email, password]);
 
   const handleRegister = async () => {
-    console.log("Registering:", { firstName, lastName, email, password });
-
     try {
       const full_name = `${firstName} ${lastName}`;
       const res = await register({ full_name, email, password }).unwrap();
 
-      console.log("Registration successful:", res);
       dispatch(setCredentials({ user: res.data, token: "" }));
-      // redirect sesuai role
-      if (res.data.role === "admin") {
-        router.push("/");
-      } else {
-        router.push("/products");
-      }
+      setIsSuccess(true);
     } catch (err) {
       console.error("Registration failed:", err);
     }
+  };
+
+  const handleClose = () => {
+    setIsSuccess(false);
+    router.push("/signin");
   };
 
   return (
@@ -201,13 +203,20 @@ export default function SignUpForm() {
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <button
-                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600"
+                  <Button
+                    className="w-full"
+                    disabled={
+                      firstName.length === 0 ||
+                      lastName.length === 0 ||
+                      email.length === 0 ||
+                      password.length === 0 ||
+                      !isChecked
+                    }
                     onClick={handleRegister}
                     type="button"
                   >
                     {isLoading ? "Loading..." : "Sign Up"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </form>
@@ -223,6 +232,13 @@ export default function SignUpForm() {
                 </Link>
               </p>
             </div>
+            <CustomModalAlert
+              type="success"
+              isOpen={isSuccess}
+              title="Sign Up Successful"
+              description="Your account has been created successfully!"
+              onClose={handleClose}
+            />
           </div>
         </div>
       </div>
