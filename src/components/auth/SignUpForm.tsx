@@ -7,7 +7,7 @@ import { useRegisterMutation } from "@/store/auth/authApi";
 import { setCredentials } from "@/store/auth/authSlice";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import Button from "../ui/button/Button";
 import CustomModalAlert from "../modals/CustomModalAlert";
@@ -23,24 +23,47 @@ export default function SignUpForm() {
   const dispatch = useDispatch();
   const router = useRouter();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {}, [firstName, lastName, email, password]);
+  const isFormValid = useMemo(() => {
+    return (
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
+      email.trim() !== "" &&
+      password.trim() !== ""
+    );
+  }, [firstName, lastName, email, password]);
 
   const handleRegister = async () => {
     try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorMessage("Invalid email format");
+        return;
+      }
+
       const full_name = `${firstName} ${lastName}`;
       const res = await register({ full_name, email, password }).unwrap();
 
+      if (!res?.data) {
+        setErrorMessage("Unexpected response from server");
+        return;
+      }
+
       dispatch(setCredentials({ user: res.data, token: "" }));
       setIsSuccess(true);
-    } catch (err) {
-      console.error("Registration failed:", err);
+    } catch (err: any) {
+      setErrorMessage(err?.data?.message || "Login failed. Please try again.");
     }
   };
 
   const handleClose = () => {
     setIsSuccess(false);
     router.push("/signin");
+  };
+
+  const onClose = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -205,13 +228,7 @@ export default function SignUpForm() {
                 <div>
                   <Button
                     className="w-full"
-                    disabled={
-                      firstName.length === 0 ||
-                      lastName.length === 0 ||
-                      email.length === 0 ||
-                      password.length === 0 ||
-                      !isChecked
-                    }
+                    disabled={!isFormValid || !isChecked}
                     onClick={handleRegister}
                     type="button"
                   >
@@ -238,6 +255,13 @@ export default function SignUpForm() {
               title="Sign Up Successful"
               description="Your account has been created successfully!"
               onClose={handleClose}
+            />
+            <CustomModalAlert
+              type="error"
+              isOpen={!!errorMessage}
+              title="Oops..!"
+              description={errorMessage || "An error occurred during sign up."}
+              onClose={onClose}
             />
           </div>
         </div>

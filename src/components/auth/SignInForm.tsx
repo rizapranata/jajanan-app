@@ -8,8 +8,9 @@ import { useLoginMutation } from "@/store/auth/authApi";
 import { setCredentials } from "@/store/auth/authSlice";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
+import CustomModalAlert from "../modals/CustomModalAlert";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,23 +18,44 @@ export default function SignInForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [login, { isLoading, error }] = useLoginMutation();
   const dispatch = useDispatch();
   const router = useRouter();
 
-  useEffect(() => {}, [email, password]);
+  const isValid = useMemo(() => {
+    return email.trim() !== "" && password.trim() !== "";
+  }, [email, password]);
 
   const handleLogin = async () => {
     try {
-      const res = await login({ email, password }).unwrap();
-      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorMessage("Invalid email format");
+        return;
+      }
 
-      if (res.data.user) {
+      const res = await login({ email, password }).unwrap();
+
+      if (!res?.data) {
+        setErrorMessage("Unexpected response from server");
+        return;
+      }
+
+      const { user, token } = res.data;
+      dispatch(setCredentials({ user, token }));
+
+      if (user) {
         router.push("/");
       }
-    } catch (err) {
-      console.error("Login failed:", err);
+    } catch (err: any) {
+      setErrorMessage(err?.data?.message || "Login failed. Please try again.");
     }
+  };
+
+  const onClose = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -163,7 +185,7 @@ export default function SignInForm() {
                     className="w-full"
                     type="button"
                     size="sm"
-                    disabled={email.length === 0 || password.length === 0}
+                    disabled={!isValid}
                     onClick={handleLogin}
                   >
                     {isLoading ? "Loading..." : "Sign In"}
@@ -183,6 +205,16 @@ export default function SignInForm() {
                 </Link>
               </p>
             </div>
+            <CustomModalAlert
+              type="error"
+              isOpen={!!errorMessage}
+              title="Oops..!"
+              description={
+                (error && "data" in error && (error as any).data?.message) ||
+                "An error occurred during sign up."
+              }
+              onClose={onClose}
+            />
           </div>
         </div>
       </div>

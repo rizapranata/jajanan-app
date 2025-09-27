@@ -3,8 +3,7 @@ import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { useModal } from "@/hooks/useModal";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -27,7 +26,6 @@ export default function AddUserModal({
   onClose,
   handleSubmit,
 }: AddUserModalProps) {
-  const { openModal, closeModal } = useModal();
   const [role, setRole] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -49,7 +47,7 @@ export default function AddUserModal({
   const onSubmit = () => {
     const full_name = `${firstName} ${lastName}`;
     handleSubmit({ full_name, email, password, role });
-    closeModal();
+    onClose();
   };
 
   const handleSelectChange = (value: string) => {
@@ -117,7 +115,7 @@ export default function AddUserModal({
         </div>
 
         <div className="flex items-center justify-end w-full gap-3 mt-6">
-          <Button size="sm" variant="outline" onClick={onClose || closeModal}>
+          <Button size="sm" variant="outline" onClick={onClose}>
             Close
           </Button>
           <Button size="sm" disabled={!isFormValid} onClick={onSubmit}>
