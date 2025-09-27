@@ -63,7 +63,32 @@ export interface UserType {
   email: string;
   role: string;
   user_id: number;
+  password?: string;
   is_active?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CreateUserRequest {
+  full_name: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+export interface CreateUserResponse {
+  message: string;
+  data: {
+    full_name: string;
+    email: string;
+    password: string;
+    role: string;
+    token: any[];
+    is_active: number;
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    user_id: number;
+    __v: number;
+  };
 }

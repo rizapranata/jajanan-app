@@ -4,7 +4,7 @@ import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -33,6 +33,16 @@ export default function AddUserModal({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const isFormValid = useMemo(() => {
+    return (
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
+      email.trim() !== "" &&
+      password.trim() !== "" &&
+      role.trim() !== ""
+    );
+  }, [firstName, lastName, email, password, role]);
 
   if (!isOpen) return null;
 
@@ -110,7 +120,7 @@ export default function AddUserModal({
           <Button size="sm" variant="outline" onClick={onClose || closeModal}>
             Close
           </Button>
-          <Button size="sm" onClick={onSubmit}>
+          <Button size="sm" disabled={!isFormValid} onClick={onSubmit}>
             Save Changes
           </Button>
         </div>

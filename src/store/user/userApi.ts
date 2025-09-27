@@ -1,10 +1,15 @@
-import { UsersResponse, UserType } from "@/types/auth";
+import {
+  CreateUserRequest,
+  CreateUserResponse,
+  UsersResponse,
+  UserType,
+} from "@/types/auth";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:3001/auth",
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
@@ -17,16 +22,16 @@ export const userApi = createApi({
   tagTypes: ["User"],
   endpoints: (builder) => ({
     getUsers: builder.query<UsersResponse, void>({
-      query: () => "/users",
+      query: () => "api/users",
       providesTags: ["User"],
     }),
     getUserById: builder.query<UserType, string>({
-      query: (id) => `/users/${id}`,
+      query: (id) => `api/users/${id}`,
       providesTags: (result, error, id) => [{ type: "User", id }],
     }),
-    createUser: builder.mutation<UserType, Partial<UserType>>({
+    createUser: builder.mutation<CreateUserResponse, CreateUserRequest>({
       query: (body) => ({
-        url: "/users",
+        url: "api/users",
         method: "POST",
         body,
       }),
@@ -37,7 +42,7 @@ export const userApi = createApi({
       { id: string; body: Partial<UserType> }
     >({
       query: ({ id, body }) => ({
-        url: `/users/${id}`,
+        url: `api/users/${id}`,
         method: "PUT",
         body,
       }),
@@ -45,17 +50,17 @@ export const userApi = createApi({
     }),
     deleteUser: builder.mutation<{ message: string }, string>({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `api/users/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, id) => [{ type: "User", id }],
+      invalidatesTags: ["User"],
     }),
     updateStatusUser: builder.mutation<
       UserType,
       { id: string; is_active: number }
     >({
       query: ({ id, is_active }) => ({
-        url: `/status/${id}`,
+        url: `api/status/${id}`,
         method: "PUT",
         body: { is_active },
       }),

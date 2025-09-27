@@ -11,33 +11,27 @@ import {
   TableBody,
 } from "@/components/ui/table";
 import {
+  useCreateUserMutation,
+  useDeleteUserMutation,
   useGetUsersQuery,
   useUpdateStatusUserMutation,
 } from "@/store/user/userApi";
-import { EditIcon, TrashIcon, PlusIcon } from "lucide-react";
-import AddUserModal from "./AddUserModal";
-import { useState } from "react";
-import { useRegisterMutation } from "@/store/auth/authApi";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "@/store/auth/authSlice";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
+import AddUserModal from "./AddUserModal";
+import { EditIcon, TrashIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface UserAddType {
-  full_name: string;
-  email: string;
-  password: string;
-  role: string;
-}
+import { CreateUserRequest } from "@/types/auth";
 
 export default function UserTable() {
   const { data: users, isLoading, error } = useGetUsersQuery();
   const [updateStatusUser] = useUpdateStatusUserMutation();
+  const [createUser] = useCreateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
   const [openModal, setOpenModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [register] = useRegisterMutation();
-  const dispatch = useDispatch();
+  const [errorMessage, setErrorMessage] = useState(null);
   const router = useRouter();
 
   const handleToggleChange = (userId: string) => {
@@ -50,20 +44,29 @@ export default function UserTable() {
     });
   };
 
-  const handleDelete = (userId: string) => {
-    console.log("Delete user ID:", userId);
+  const handleDelete = async (userId: string) => {
+    const res = await deleteUser(userId).unwrap();
+    setMessage(res.message || "User deleted successfully");
+    setIsSuccess(true);
   };
 
-  const handleAddUser = async (data: UserAddType) => {
+  const handleAddUser = async (data: CreateUserRequest) => {
     try {
       const { full_name, email, password, role } = data;
-      const res = await register({ full_name, email, password, role }).unwrap();
-      dispatch(setCredentials({ user: res.data, token: "" }));
-      setMessage(res?.message);
-      console.log("Adding user:", { full_name, email, password, role });
+      const res = await createUser({
+        full_name,
+        email,
+        password,
+        role,
+      }).unwrap();
+
+      setMessage(res.message || "User added successfully");
       setOpenModal(false);
+      setIsSuccess(true);
     } catch (error) {
-      console.error("Error adding user:", error);
+      const { data } = error as any;
+      setErrorMessage(data?.message || "Failed to add user");
+      setOpenModal(false);
     }
   };
 
@@ -72,8 +75,8 @@ export default function UserTable() {
   };
 
   const onClose = () => {
-    router.push("/");
-    setMessage("");
+    router.back();
+    setErrorMessage(null);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -184,15 +187,15 @@ export default function UserTable() {
         <CustomModalAlert
           type="success"
           isOpen={isSuccess}
-          title="Sign Up Successful"
-          description="Your account has been created successfully!"
+          title="Successful"
+          description={message || "User added successfully."}
           onClose={() => setIsSuccess(false)}
         />
         <CustomModalAlert
           type="warning"
-          isOpen={!!error}
+          isOpen={!!errorMessage}
           title="Oops..!"
-          description={message || "An error occurred during sign up."}
+          description={errorMessage || "An error occurred during sign up."}
           onClose={onClose}
         />
       </div>
