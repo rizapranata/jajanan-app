@@ -17,10 +17,10 @@ import {
   useUpdateStatusUserMutation,
 } from "@/store/user/userApi";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
+import CustomConfirmModal from "@/components/modals/CustomConfirmModal";
 import AddUserModal from "./AddUserModal";
 import { EditIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { CreateUserRequest } from "@/types/auth";
 
 export default function UserTable() {
@@ -29,10 +29,11 @@ export default function UserTable() {
   const [createUser] = useCreateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [openModal, setOpenModal] = useState(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [userId, setUserId] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
-  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleToggleChange = (userId: string) => {
     const user = users?.data.find((u) => u._id === userId);
@@ -44,15 +45,26 @@ export default function UserTable() {
     });
   };
 
-  const handleDelete = async (userId: string) => {
+  const openDeleteModal = (userId: string) => {
+    setUserId(userId);
+    setOpenConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
     const res = await deleteUser(userId).unwrap();
     setMessage(res.message || "User deleted successfully");
     setIsSuccess(true);
+    setOpenConfirmModal(false);
   };
 
   const handleAddUser = async (data: CreateUserRequest) => {
     try {
       const { full_name, email, password, role } = data;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorMessage("Invalid format email!")
+        return;
+      }
       const res = await createUser({
         full_name,
         email,
@@ -72,11 +84,6 @@ export default function UserTable() {
 
   const handleCancel = () => {
     setOpenModal(false);
-  };
-
-  const onClose = () => {
-    router.back();
-    setErrorMessage(null);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -124,6 +131,12 @@ export default function UserTable() {
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
+                Role
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Status
               </TableCell>
               <TableCell
@@ -144,6 +157,14 @@ export default function UserTable() {
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   {user.email}
+                </TableCell>
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                  <Badge
+                    size="sm"
+                    color={user.role === "admin" ? "primary" : "info"}
+                  >
+                    {user.role}
+                  </Badge>
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2 mb-1">
@@ -168,7 +189,7 @@ export default function UserTable() {
                       </button>
                       <button
                         className="text-error-500 hover:text-error-600 dark:text-error-400"
-                        onClick={() => handleDelete(user._id)}
+                        onClick={() => openDeleteModal(user._id)}
                       >
                         <TrashIcon className="inline h-4 w-4 stroke-[2.5]" />
                       </button>
@@ -196,7 +217,17 @@ export default function UserTable() {
           isOpen={!!errorMessage}
           title="Oops..!"
           description={errorMessage || "An error occurred during sign up."}
-          onClose={onClose}
+          onClose={() => setErrorMessage(null)}
+        />
+        <CustomConfirmModal
+          isOpen={openConfirmModal}
+          onClose={() => setOpenConfirmModal(false)}
+          confirmText="Delete"
+          cancelText="Cancel"
+          title="Are you sure?"
+          message="Do you really want to delete this user?"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setOpenConfirmModal(false)}
         />
       </div>
     </div>

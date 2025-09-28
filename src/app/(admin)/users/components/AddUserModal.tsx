@@ -3,17 +3,13 @@ import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
+import { CreateUserRequest } from "@/types/auth";
 import { useMemo, useState } from "react";
 
 interface AddUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  handleSubmit: (data: {
-    full_name: string;
-    email: string;
-    password: string;
-    role: string;
-  }) => void;
+  handleSubmit: (data: CreateUserRequest) => void;
 }
 
 const options = [
@@ -47,6 +43,7 @@ export default function AddUserModal({
   const onSubmit = () => {
     const full_name = `${firstName} ${lastName}`;
     handleSubmit({ full_name, email, password, role });
+    resetForm();
     onClose();
   };
 
@@ -54,11 +51,20 @@ export default function AddUserModal({
     setRole(value);
   };
 
+  const resetForm = () => {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setPassword("");
+    setRole("");
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {}}
       className="max-w-[584px] p-5 lg:p-10"
+      showCloseButton={false}
     >
       <form className="">
         <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
