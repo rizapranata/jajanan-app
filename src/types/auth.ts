@@ -92,3 +92,27 @@ export interface CreateUserResponse {
     __v: number;
   };
 }
+export interface DetailUserResponse {
+  message: string;
+  data: {
+    full_name: string;
+    email: string;
+    password: string;
+    role: string;
+    token: any[];
+    is_active: number;
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    user_id: number;
+    __v: number;
+  };
+}
+
+export interface UpdateUserRequest {
+  id: string;
+  full_name: string;
+  email: string;
+  password: string;
+  role: string;
+}

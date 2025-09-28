@@ -1,6 +1,7 @@
 import {
   CreateUserRequest,
   CreateUserResponse,
+  DetailUserResponse,
   UsersResponse,
   UserType,
 } from "@/types/auth";
@@ -25,7 +26,7 @@ export const userApi = createApi({
       query: () => "api/users",
       providesTags: ["User"],
     }),
-    getUserById: builder.query<UserType, string>({
+    getUserById: builder.query<DetailUserResponse, string>({
       query: (id) => `api/users/${id}`,
       providesTags: (result, error, id) => [{ type: "User", id }],
     }),
@@ -38,8 +39,8 @@ export const userApi = createApi({
       invalidatesTags: ["User"],
     }),
     updateUser: builder.mutation<
-      UserType,
-      { id: string; body: Partial<UserType> }
+      CreateUserResponse,
+      { id: string; body: CreateUserRequest }
     >({
       query: ({ id, body }) => ({
         url: `api/users/${id}`,
@@ -72,6 +73,7 @@ export const userApi = createApi({
 export const {
   useGetUsersQuery,
   useGetUserByIdQuery,
+  useLazyGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,

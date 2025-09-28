@@ -2,6 +2,7 @@ import React, { FC } from "react";
 
 interface InputProps {
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
+  value?: "text" | "number" | "email" | "password" | "date" | "time" | string;
   id?: string;
   name?: string;
   placeholder?: string;
@@ -19,6 +20,7 @@ interface InputProps {
 
 const Input: FC<InputProps> = ({
   type = "text",
+  value,
   id,
   name,
   placeholder,
@@ -51,6 +53,7 @@ const Input: FC<InputProps> = ({
     <div className="relative">
       <input
         type={type}
+        value={value}
         id={id}
         name={name}
         placeholder={placeholder}

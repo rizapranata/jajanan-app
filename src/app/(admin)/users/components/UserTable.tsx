@@ -14,7 +14,9 @@ import {
   useCreateUserMutation,
   useDeleteUserMutation,
   useGetUsersQuery,
+  useLazyGetUserByIdQuery,
   useUpdateStatusUserMutation,
+  useUpdateUserMutation,
 } from "@/store/user/userApi";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
 import CustomConfirmModal from "@/components/modals/CustomConfirmModal";
@@ -26,6 +28,7 @@ import { CreateUserRequest } from "@/types/auth";
 export default function UserTable() {
   const { data: users, isLoading, error } = useGetUsersQuery();
   const [updateStatusUser] = useUpdateStatusUserMutation();
+  const [updateUser] = useUpdateUserMutation();
   const [createUser] = useCreateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [openModal, setOpenModal] = useState(false);
@@ -34,6 +37,7 @@ export default function UserTable() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [triggerGetUser, { data: user }] = useLazyGetUserByIdQuery();
 
   const handleToggleChange = (userId: string) => {
     const user = users?.data.find((u) => u._id === userId);
@@ -57,22 +61,36 @@ export default function UserTable() {
     setOpenConfirmModal(false);
   };
 
-  const handleAddUser = async (data: CreateUserRequest) => {
+  const handleAddUser = async (data: CreateUserRequest, isEdit: boolean) => {
     try {
+      const userIdValue = user?.data._id;
       const { full_name, email, password, role } = data;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        setErrorMessage("Invalid format email!")
+        setErrorMessage("Invalid format email!");
         return;
       }
-      const res = await createUser({
-        full_name,
-        email,
-        password,
-        role,
-      }).unwrap();
 
-      setMessage(res.message || "User added successfully");
+      if (isEdit) {
+        if (!userIdValue) {
+          setErrorMessage("User ID is missing for update.");
+          return;
+        }
+        const res = await updateUser({
+          id: userIdValue,
+          body: { full_name, email, password, role },
+        }).unwrap();
+        setMessage(res.message || "User update successfully");
+      } else {
+        const res = await createUser({
+          full_name,
+          email,
+          password,
+          role,
+        }).unwrap();
+
+        setMessage(res.message || "User added successfully");
+      }
       setOpenModal(false);
       setIsSuccess(true);
     } catch (error) {
@@ -80,6 +98,11 @@ export default function UserTable() {
       setErrorMessage(data?.message || "Failed to add user");
       setOpenModal(false);
     }
+  };
+
+  const handleEditUser = (userId: string) => {
+    triggerGetUser(userId); // fetch detail user by id
+    setOpenModal(true);
   };
 
   const handleCancel = () => {
@@ -185,7 +208,10 @@ export default function UserTable() {
                   {user.role !== "admin" && (
                     <div className="flex items-center gap-3">
                       <button className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-                        <EditIcon className="inline h-4 w-4 stroke-[2.5]" />
+                        <EditIcon
+                          className="inline h-4 w-4 stroke-[2.5]"
+                          onClick={() => handleEditUser(user._id)}
+                        />
                       </button>
                       <button
                         className="text-error-500 hover:text-error-600 dark:text-error-400"
@@ -203,7 +229,8 @@ export default function UserTable() {
         <AddUserModal
           isOpen={openModal}
           onClose={handleCancel}
-          handleSubmit={(data) => handleAddUser(data)}
+          user={user}
+          handleSubmit={(data, isEdit) => handleAddUser(data, isEdit)}
         />
         <CustomModalAlert
           type="success"

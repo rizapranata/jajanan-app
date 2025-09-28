@@ -3,13 +3,14 @@ import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { CreateUserRequest } from "@/types/auth";
-import { useMemo, useState } from "react";
+import { CreateUserRequest, DetailUserResponse } from "@/types/auth";
+import { useEffect, useMemo, useState } from "react";
 
 interface AddUserModalProps {
   isOpen: boolean;
+  user?: DetailUserResponse; // jika ada → edit mode
   onClose: () => void;
-  handleSubmit: (data: CreateUserRequest) => void;
+  handleSubmit: (data: CreateUserRequest, type: boolean) => void;
 }
 
 const options = [
@@ -19,6 +20,7 @@ const options = [
 
 export default function AddUserModal({
   isOpen,
+  user,
   onClose,
   handleSubmit,
 }: AddUserModalProps) {
@@ -28,28 +30,7 @@ export default function AddUserModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const isFormValid = useMemo(() => {
-    return (
-      firstName.trim() !== "" &&
-      lastName.trim() !== "" &&
-      email.trim() !== "" &&
-      password.trim() !== "" &&
-      role.trim() !== ""
-    );
-  }, [firstName, lastName, email, password, role]);
-
-  if (!isOpen) return null;
-
-  const onSubmit = () => {
-    const full_name = `${firstName} ${lastName}`;
-    handleSubmit({ full_name, email, password, role });
-    resetForm();
-    onClose();
-  };
-
-  const handleSelectChange = (value: string) => {
-    setRole(value);
-  };
+  const isEditMode = !!user;
 
   const resetForm = () => {
     setFirstName("");
@@ -57,6 +38,50 @@ export default function AddUserModal({
     setEmail("");
     setPassword("");
     setRole("");
+  };
+
+  useEffect(() => {
+    if (user) {
+      const [first, ...lastParts] = user.data.full_name?.split(" ") ?? ["", ""];
+      setFirstName(first);
+      setLastName(lastParts.join(" "));
+      setEmail(user.data.email);
+      setRole(user.data.role);
+      setPassword(""); // kosongkan password saat edit
+    } else {
+      resetForm();
+    }
+  }, [user, isOpen]);
+
+  const isFormValid = useMemo(() => {
+    return (
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
+      email.trim() !== "" &&
+      role.trim() !== "" &&
+      (isEditMode ? true : password.trim() !== "")
+    );
+  }, [firstName, lastName, email, role, password, isEditMode]);
+
+  if (!isOpen) return null;
+
+  const onSubmit = () => {
+    const full_name = `${firstName} ${lastName}`;
+    handleSubmit(
+      {
+        full_name,
+        email,
+        role,
+        password: password ?? "", // selalu kirim password, kosong jika tidak diisi
+      },
+      isEditMode
+    );
+    resetForm();
+    onClose();
+  };
+
+  const handleSelectChange = (value: string) => {
+    setRole(value);
   };
 
   return (
@@ -68,7 +93,7 @@ export default function AddUserModal({
     >
       <form className="">
         <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
-          Personal Information
+          {isEditMode ? "Edit User" : "Add User"}
         </h4>
 
         <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
@@ -77,6 +102,7 @@ export default function AddUserModal({
             <Input
               type="text"
               placeholder="Emirhan"
+              value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
           </div>
@@ -86,6 +112,7 @@ export default function AddUserModal({
             <Input
               type="text"
               placeholder="Boruch"
+              value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
           </div>
@@ -95,15 +122,18 @@ export default function AddUserModal({
             <Input
               type="email"
               placeholder="emirhanboruch55@gmail.com"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isEditMode} // biasanya email tidak boleh diubah
             />
           </div>
 
           <div className="col-span-1">
-            <Label>Password</Label>
+            <Label>Password {isEditMode && "(optional)"}</Label>
             <Input
               type="password"
               placeholder="password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
@@ -115,6 +145,7 @@ export default function AddUserModal({
             <Select
               className="mt-1 block w-full rounded-md border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
               options={options}
+              defaultValue={role}
               onChange={handleSelectChange}
             />
           </div>
@@ -125,7 +156,7 @@ export default function AddUserModal({
             Close
           </Button>
           <Button size="sm" disabled={!isFormValid} onClick={onSubmit}>
-            Save Changes
+            {isEditMode ? "Update User" : "Save User"}
           </Button>
         </div>
       </form>
