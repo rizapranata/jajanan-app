@@ -8,9 +8,10 @@ import { useEffect, useMemo, useState } from "react";
 
 interface AddUserModalProps {
   isOpen: boolean;
+  isEdit: boolean;
   user?: DetailUserResponse; // jika ada → edit mode
   onClose: () => void;
-  handleSubmit: (data: CreateUserRequest, type: boolean) => void;
+  handleSubmit: (data: CreateUserRequest) => void;
 }
 
 const options = [
@@ -20,6 +21,7 @@ const options = [
 
 export default function AddUserModal({
   isOpen,
+  isEdit,
   user,
   onClose,
   handleSubmit,
@@ -30,8 +32,6 @@ export default function AddUserModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const isEditMode = !!user;
-
   const resetForm = () => {
     setFirstName("");
     setLastName("");
@@ -41,7 +41,7 @@ export default function AddUserModal({
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && isEdit) {
       const [first, ...lastParts] = user.data.full_name?.split(" ") ?? ["", ""];
       setFirstName(first);
       setLastName(lastParts.join(" "));
@@ -51,7 +51,7 @@ export default function AddUserModal({
     } else {
       resetForm();
     }
-  }, [user, isOpen]);
+  }, [user, isEdit, isOpen]);
 
   const isFormValid = useMemo(() => {
     return (
@@ -59,23 +59,20 @@ export default function AddUserModal({
       lastName.trim() !== "" &&
       email.trim() !== "" &&
       role.trim() !== "" &&
-      (isEditMode ? true : password.trim() !== "")
+      (isEdit ? true : password.trim() !== "")
     );
-  }, [firstName, lastName, email, role, password, isEditMode]);
+  }, [firstName, lastName, email, role, password, isEdit]);
 
   if (!isOpen) return null;
 
   const onSubmit = () => {
     const full_name = `${firstName} ${lastName}`;
-    handleSubmit(
-      {
-        full_name,
-        email,
-        role,
-        password: password ?? "", // selalu kirim password, kosong jika tidak diisi
-      },
-      isEditMode
-    );
+    handleSubmit({
+      full_name,
+      email,
+      role,
+      password: password ?? "", // selalu kirim password, kosong jika tidak diisi
+    });
     resetForm();
     onClose();
   };
@@ -93,7 +90,7 @@ export default function AddUserModal({
     >
       <form className="">
         <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
-          {isEditMode ? "Edit User" : "Add User"}
+          {isEdit ? "Edit User" : "Add User"}
         </h4>
 
         <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
@@ -124,12 +121,12 @@ export default function AddUserModal({
               placeholder="emirhanboruch55@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={isEditMode} // biasanya email tidak boleh diubah
+              disabled={isEdit} // biasanya email tidak boleh diubah
             />
           </div>
 
           <div className="col-span-1">
-            <Label>Password {isEditMode && "(optional)"}</Label>
+            <Label>Password {isEdit && "(optional)"}</Label>
             <Input
               type="password"
               placeholder="password"
@@ -145,7 +142,7 @@ export default function AddUserModal({
             <Select
               className="mt-1 block w-full rounded-md border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
               options={options}
-              defaultValue={role}
+              initValue={role}
               onChange={handleSelectChange}
             />
           </div>
@@ -156,7 +153,7 @@ export default function AddUserModal({
             Close
           </Button>
           <Button size="sm" disabled={!isFormValid} onClick={onSubmit}>
-            {isEditMode ? "Update User" : "Save User"}
+            {isEdit ? "Update User" : "Save User"}
           </Button>
         </div>
       </form>

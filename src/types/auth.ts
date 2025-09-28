@@ -116,3 +116,16 @@ export interface UpdateUserRequest {
   password: string;
   role: string;
 }
+
+export interface ProfileUserResponse {
+  message: string;
+  data: {
+    is_active: number;
+    _id: string;
+    full_name: string;
+    email: string;
+    role: string;
+    customer_id: number;
+    iat: number;
+  };
+}

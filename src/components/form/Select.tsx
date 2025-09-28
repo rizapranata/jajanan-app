@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Option {
   value: string;
@@ -7,6 +7,7 @@ interface Option {
 
 interface SelectProps {
   options: Option[];
+  initValue: string;
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
@@ -15,6 +16,7 @@ interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
   options,
+  initValue,
   placeholder = "Select an option",
   onChange,
   className = "",
@@ -22,6 +24,14 @@ const Select: React.FC<SelectProps> = ({
 }) => {
   // Manage the selected value
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+
+  useEffect(() => {
+    if (initValue !== "") {
+      setSelectedValue(initValue);
+    } else {
+      setSelectedValue(defaultValue);
+    }
+  }, [initValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;

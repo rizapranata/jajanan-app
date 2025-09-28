@@ -1,4 +1,10 @@
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from "@/types/auth";
+import {
+  LoginRequest,
+  LoginResponse,
+  ProfileUserResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from "@/types/auth";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
@@ -35,8 +41,17 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
+    profile: builder.query<ProfileUserResponse, void>({
+      query: () => ({
+        url: "/me",
+      }),
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useLogoutMutation } =
-  authApi;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useLogoutMutation,
+  useProfileQuery
+} = authApi;

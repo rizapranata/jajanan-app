@@ -37,6 +37,7 @@ export default function UserTable() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isEdit, setIsEdit] = useState(false);
   const [triggerGetUser, { data: user }] = useLazyGetUserByIdQuery();
 
   const handleToggleChange = (userId: string) => {
@@ -56,12 +57,15 @@ export default function UserTable() {
 
   const handleConfirmDelete = async () => {
     const res = await deleteUser(userId).unwrap();
+    if (res.error) return;
+
+    setOpenConfirmModal(false);
     setMessage(res.message || "User deleted successfully");
     setIsSuccess(true);
-    setOpenConfirmModal(false);
+    setUserId("");
   };
 
-  const handleAddUser = async (data: CreateUserRequest, isEdit: boolean) => {
+  const handleAddUser = async (data: CreateUserRequest) => {
     try {
       const userIdValue = user?.data._id;
       const { full_name, email, password, role } = data;
@@ -103,10 +107,16 @@ export default function UserTable() {
   const handleEditUser = (userId: string) => {
     triggerGetUser(userId); // fetch detail user by id
     setOpenModal(true);
+    setIsEdit(true);
   };
 
   const handleCancel = () => {
     setOpenModal(false);
+  };
+
+  const handleOpenModalAddUser = () => {
+    setOpenModal(true);
+    setIsEdit(false);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -127,7 +137,7 @@ export default function UserTable() {
             type="button"
             variant="outline"
             startIcon={<PlusIcon className="h-4 w-4" />}
-            onClick={() => setOpenModal(true)}
+            onClick={handleOpenModalAddUser}
           >
             Add User
           </Button>
@@ -228,9 +238,10 @@ export default function UserTable() {
         </Table>
         <AddUserModal
           isOpen={openModal}
+          isEdit={isEdit}
           onClose={handleCancel}
           user={user}
-          handleSubmit={(data, isEdit) => handleAddUser(data, isEdit)}
+          handleSubmit={(data) => handleAddUser(data)}
         />
         <CustomModalAlert
           type="success"
@@ -244,7 +255,10 @@ export default function UserTable() {
           isOpen={!!errorMessage}
           title="Oops..!"
           description={errorMessage || "An error occurred during sign up."}
-          onClose={() => setErrorMessage(null)}
+          onClose={() => {
+            setErrorMessage(null);
+            setOpenModal(true);
+          }}
         />
         <CustomConfirmModal
           isOpen={openConfirmModal}
