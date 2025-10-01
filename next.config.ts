@@ -13,9 +13,19 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/auth/:path*",
-        destination: "http://localhost:3000/auth/:path*", // Express backend
+        destination: "http://localhost:3001/auth/:path*", // Express backend
       },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3001",
+        pathname: "/uploads/**",
+      },
+    ],
   },
 };
 

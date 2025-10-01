@@ -1,7 +1,7 @@
 import React from "react";
 import HomeLayout from "./homeLayout";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
 import { Metadata } from "next";
+import ProductTable from "@/components/product/ProductTable";
 
 export const metadata: Metadata = {
   title:
@@ -15,10 +15,10 @@ export default function HomePage({ children }: { children: React.ReactNode }) {
       <HomeLayout>
         <div className="grid grid-cols-12">
           <div className="col-span-12 space-y-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            {/* <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
               Products Page Home
-            </h2>
-            <RecentOrders />
+            </h2> */}
+            <ProductTable />
           </div>
         </div>
       </HomeLayout>
