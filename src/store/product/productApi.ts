@@ -1,4 +1,9 @@
-import { ProductQueryParams, ProductResponse } from "@/types/product";
+import {
+  CategoryResponse,
+  ProductQueryParams,
+  ProductResponse,
+  TagResponse,
+} from "@/types/product";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const productApi = createApi({
@@ -23,7 +28,18 @@ export const productApi = createApi({
       }),
       providesTags: ["Product"],
     }),
+    getTags: builder.query<TagResponse, void>({
+      query: () => ({
+        url: "api/tags",
+      }),
+    }),
+    getCategories: builder.query<CategoryResponse, void>({
+      query: () => ({
+        url: "api/categories",
+      }),
+    }),
   }),
 });
 
-export const { useGetProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetCategoriesQuery, useGetTagsQuery } =
+  productApi;

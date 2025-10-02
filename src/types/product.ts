@@ -46,3 +46,25 @@ export interface ProductQueryParams {
   category?: string;
   tags?: string[];
 }
+export interface TagResponse {
+    status: string;
+    data:   Tags[];
+}
+export interface Tags {
+    _id:  string;
+    name: string;
+    __v:  number;
+}
+
+export interface CategoryResponse {
+    status: string;
+    data:   Categories[];
+}
+
+export interface Categories {
+    _id:        string;
+    name:       string;
+    __v:        number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}

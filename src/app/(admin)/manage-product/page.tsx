@@ -10,10 +10,7 @@ export const metadata: Metadata = {
 export default function ManageProducts() {
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 space-y-6">
-        {/* <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Products Management Page
-        </h2> */}
+      <div className="col-span-12 space-y-0">
         <ProductTable />
       </div>
     </div>
