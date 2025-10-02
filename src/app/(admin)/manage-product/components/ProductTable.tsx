@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import {
+  useCreateProductMutation,
   useGetCategoriesQuery,
   useGetProductsQuery,
   useGetTagsQuery,
@@ -21,13 +22,24 @@ import CustomConfirmModal from "@/components/modals/CustomConfirmModal";
 import ComponentSearch from "@/components/common/ComponentSearch";
 import Select from "@/components/form/Select";
 import MultiSelect from "@/components/form/MultiSelect";
+import Button from "@/components/ui/button/Button";
+import AddProductModal from "./AddProductModal";
+import { ProductRequest } from "@/types/product";
+import CustomModalAlert from "@/components/modals/CustomModalAlert";
 
 export default function ProductTable() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
+  const [isEdit, setIsEdit] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const [category, setCategory] = useState("");
-  const [selectedTag, setSelectedTags] = useState([""]);
+  const [selectedTag, setSelectedTags] = useState<string[]>();
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const [createProduct] = useCreateProductMutation();
 
   const { data: categories } = useGetCategoriesQuery();
   const { data: tags } = useGetTagsQuery();
@@ -46,6 +58,7 @@ export default function ProductTable() {
   });
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   const totalPages = products ? Math.ceil(products?.count / limit) : 1;
+
   const categoryData = categories?.data.map((cat) => ({
     value: cat._id,
     label: cat.name,
@@ -78,21 +91,72 @@ export default function ProductTable() {
     setSelectedTags(value);
   };
 
-  const handleSearchClear = () => {};
+  const handleOpenModalAddProduct = () => {
+    setOpenModal(true);
+    setIsEdit(false);
+  };
+
+  const handleCancel = () => {
+    setOpenModal(false);
+  };
+
+  const handleAddProduct = async (dataProdact: ProductRequest) => {
+    try {
+      const { name, price, category, image_url, discount, tags } =
+        dataProdact;
+      const payload = new FormData();
+      if (image_url instanceof File) {
+        payload.append("image", image_url);
+      }
+
+      tags.forEach((tag) => {
+        payload.append("tags", tag);
+      });
+
+      payload.append("name", name);
+      payload.append("price", price.toString());
+      payload.append("category", category);
+      payload.append("discount", discount.toString());
+
+      const { data, status, message } = await createProduct(payload).unwrap();
+
+      if (status !== "success") return;
+      setSuccessMessage(message);
+      setIsSuccess(true);
+      console.log("message:", message);
+    } catch (error) {
+      const { data } = error as any;
+      setErrorMessage(data?.message || "Failed to add product");
+      setOpenModal(false);
+    }
+  };
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-        Product Management
-      </h3>
-      <div className="flex md:grid-cols-3 md:gap-3 lg:gap-3 py-1 md:justify-start sm:flex-row sm:items-center">
+      <div className="flex justify-between">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+          Product Management
+        </h3>
+        <div>
+          <Button
+            size="sm"
+            type="button"
+            variant="outline"
+            startIcon={<PlusIcon className="h-4 w-4" />}
+            onClick={handleOpenModalAddProduct}
+          >
+            Add Product
+          </Button>
+        </div>
+      </div>
+      <div className="flex md:grid-cols-4 md:gap-3 lg:gap-3 py-1 md:justify-start sm:flex-row sm:items-center">
         <div>
           <ComponentSearch
             placeholder="Search product.."
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div>
+        <div className="hidden md:flex">
           <Select
             className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
             options={categoryData ?? []}
@@ -101,7 +165,7 @@ export default function ProductTable() {
             onChange={handleSelectChange}
           />
         </div>
-        <div className="">
+        <div className="hidden md:flex">
           <MultiSelect
             label={""}
             options={tagsData ?? []}
@@ -120,6 +184,12 @@ export default function ProductTable() {
                   className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Products
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Discount
                 </TableCell>
                 <TableCell
                   isHeader
@@ -173,16 +243,11 @@ export default function ProductTable() {
                               {product.price}
                             </span>
                           </div>
-                          {/* <div>
-                        <p className=" text-gray-500 text-theme-sm dark:text-gray-500/90">
-                          Tags
-                        </p>
-                        <Badge size="sm" color="success">
-                          {product.tags.map((tag) => tag.name)}
-                        </Badge>
-                      </div> */}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {product.discount}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {product.category.name}
@@ -191,9 +256,13 @@ export default function ProductTable() {
                       {product.price}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <Badge size="sm" color="success">
-                        {product.tags.map((tag) => tag.name)}
-                      </Badge>
+                      <div className="flex flex-nowrap max-w-32 gap-3">
+                        {product.tags.map((tag) => (
+                          <Badge key={tag._id} size="sm" color="success">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <div className="flex items-center gap-3">
@@ -214,7 +283,7 @@ export default function ProductTable() {
                   </TableRow>
                 ))
               ) : (
-                <div className="flex py-5">
+                <div className="flex mx-auto">
                   <h3 className="text-sm font-normal text-gray-800 dark:text-gray-400">
                     Product empty..
                   </h3>
@@ -229,6 +298,31 @@ export default function ProductTable() {
               onPageChange={(newPage) => setPage(newPage)}
             />
           </div>
+          <AddProductModal
+            isOpen={openModal}
+            isEdit={isEdit}
+            tags={tags ?? { status: "", data: [] }}
+            categories={categories ?? { status: "", data: [] }}
+            onClose={handleCancel}
+            onSubmit={(data) => handleAddProduct(data)}
+          />
+          <CustomModalAlert
+            type="success"
+            isOpen={isSuccess}
+            title="Successful"
+            description={successMessage || "User added successfully."}
+            onClose={() => setIsSuccess(false)}
+          />
+          <CustomModalAlert
+            type="warning"
+            isOpen={!!errorMessage}
+            title="Oops..!"
+            description={errorMessage || "An error occurred during sign up."}
+            onClose={() => {
+              setErrorMessage(null);
+              setOpenModal(false);
+            }}
+          />
           <CustomConfirmModal
             isOpen={openConfirmModal}
             onClose={() => setOpenConfirmModal(false)}

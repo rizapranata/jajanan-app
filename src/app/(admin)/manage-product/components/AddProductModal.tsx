@@ -1,0 +1,188 @@
+import FileInput from "@/components/form/input/FileInput";
+import Input from "@/components/form/input/InputField";
+import TextArea from "@/components/form/input/TextArea";
+import Label from "@/components/form/Label";
+import MultiSelect from "@/components/form/MultiSelect";
+import Select from "@/components/form/Select";
+import Button from "@/components/ui/button/Button";
+import { Modal } from "@/components/ui/modal";
+import { CategoryResponse, ProductRequest, TagResponse } from "@/types/product";
+import { ChangeEvent, useMemo, useState } from "react";
+
+interface AddProductProps {
+  isOpen: boolean;
+  isEdit: boolean;
+  tags: TagResponse;
+  categories: CategoryResponse;
+  onClose: () => void;
+  onSubmit: (data: ProductRequest) => void;
+}
+
+export default function AddProductModal({
+  isOpen,
+  isEdit,
+  tags,
+  categories,
+  onClose,
+  onSubmit,
+}: AddProductProps) {
+  const [price, setPrice] = useState(0);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>();
+  const [file, setFile] = useState<File | null>(null);
+  const [discount, setDiscount] = useState(0);
+
+  const tagsData = tags?.data.map((tag) => ({
+    value: tag.name,
+    text: tag.name,
+    selected: false,
+  }));
+
+  const categoryData = categories.data.map((cat) => ({
+    value: cat._id,
+    label: cat.name,
+  }));
+
+  const resetForm = () => {
+    setPrice(0);
+    setName("");
+    setSelectedTags([]);
+    setFile(null);
+    setDiscount(0);
+  };
+
+  const isFormValid = useMemo(() => {
+    return (
+      price !== 0 &&
+      name.trim() !== "" &&
+      category.trim() !== "" &&
+      file !== undefined
+    );
+  }, [price, name, category, discount]);
+
+  if (!isOpen) return null;
+
+  const onChangeFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const imageFile: File = e.target.files[0];
+      setFile(imageFile);
+    }
+  };
+
+  const handleSubmit = () => {
+    onSubmit({
+      name,
+      price,
+      category,
+      tags: selectedTags ?? [],
+      discount,
+      image_url: file,
+    });
+    resetForm();
+    onClose();
+  };
+
+  const handleSelectChange = (value: string) => {
+    setCategory(value);
+  };
+
+  const handleSelectTags = (value: string[]) => {
+    setSelectedTags(value);
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {}}
+      className="max-w-1/2 p-5 lg:p-10"
+      showCloseButton={false}
+    >
+      <form className="">
+        <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
+          {isEdit ? "Edit Product" : "Add Product"}
+        </h4>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+          <div className="col-span-1">
+            <Label>Name</Label>
+            <Input
+              type="text"
+              placeholder="popcorn"
+              // value={}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="col-span-1">
+            <Label>Price</Label>
+            <Input
+              type="number"
+              placeholder="Rp. 2000"
+              // value={}
+              onChange={(e) => setPrice(Number(e.target.value))}
+            />
+          </div>
+
+          <div className="col-span-1">
+            <Label>
+              Category<span className="text-error-500">*</span>
+            </Label>
+            <Select
+              className="mt-1 block w-full rounded-md border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
+              options={categoryData}
+              initValue={category}
+              onChange={handleSelectChange}
+            />
+          </div>
+
+          <div className="col-span-1 ">
+            <Label>Tags</Label>
+            <MultiSelect
+              label={""}
+              options={tagsData ?? []}
+              onChange={handleSelectTags}
+            />
+          </div>
+
+          <div className="col-span-1">
+            <Label>Image</Label>
+            <FileInput
+              // value={}
+              onChange={onChangeFileHandler}
+            />
+          </div>
+
+          <div className="col-span-1 ">
+            <Label>Discount</Label>
+            <Input
+              placeholder="20%"
+              // value={discount}
+              onChange={(e) => setDiscount(Number(e.target.value))}
+            />
+          </div>
+
+          {file && (
+            <div className="col-span-1">
+              <p>Preview:</p>
+              <img
+                src={URL.createObjectURL(file)}
+                alt="preview"
+                className="w-40 h-40 object-cover rounded"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end w-full gap-3 mt-6">
+          <Button size="sm" variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          <Button size="sm" disabled={!isFormValid} onClick={handleSubmit}>
+            {isEdit ? "Update Product" : "Save Product"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}

@@ -24,6 +24,7 @@ import AddUserModal from "./AddUserModal";
 import { EditIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { CreateUserRequest } from "@/types/auth";
+import ComponentSearch from "@/components/common/ComponentSearch";
 
 export default function UserTable() {
   const { data: users, isLoading, error } = useGetUsersQuery();
@@ -37,6 +38,7 @@ export default function UserTable() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [triggerGetUser, { data: user }] = useLazyGetUserByIdQuery();
 
@@ -123,153 +125,156 @@ export default function UserTable() {
   if (error) return <div>Error loading users</div>;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h3 className="text-lg pb-2 font-semibold text-gray-800 dark:text-white/90">
+        Manage Users
+      </h3>
+      <div className="flex mb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Manage Users
-          </h3>
+          <ComponentSearch
+            placeholder="Search product.."
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            size="sm"
-            type="button"
-            variant="outline"
-            startIcon={<PlusIcon className="h-4 w-4" />}
-            onClick={handleOpenModalAddUser}
-          >
-            Add User
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          type="button"
+          variant="outline"
+          startIcon={<PlusIcon className="h-4 w-4" />}
+          onClick={handleOpenModalAddUser}
+        >
+          Add User
+        </Button>
       </div>
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          {/* Table Header */}
-          <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Name
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Email
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Role
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Status
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Action
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {users?.data?.map((user) => (
-              <TableRow key={user._id} className="">
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {user.full_name}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+        <div className="max-w-full overflow-x-auto">
+          <Table>
+            {/* Table Header */}
+            <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
+              <TableRow>
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Name
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {user.email}
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Email
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={user.role === "admin" ? "primary" : "info"}
-                  >
-                    {user.role}
-                  </Badge>
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Role
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Switch
-                      defaultChecked={user.is_active === 1}
-                      onChange={() => handleToggleChange(user._id)}
-                      label={""}
-                    />
-                    <Badge
-                      size="sm"
-                      color={user.is_active === 1 ? "success" : "warning"}
-                    >
-                      {user.is_active === 1 ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Status
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {user.role !== "admin" && (
-                    <div className="flex items-center gap-3">
-                      <button className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-                        <EditIcon
-                          className="inline h-4 w-4 stroke-[2.5]"
-                          onClick={() => handleEditUser(user._id)}
-                        />
-                      </button>
-                      <button
-                        className="text-error-500 hover:text-error-600 dark:text-error-400"
-                        onClick={() => openDeleteModal(user._id)}
-                      >
-                        <TrashIcon className="inline h-4 w-4 stroke-[2.5]" />
-                      </button>
-                    </div>
-                  )}
+                <TableCell
+                  isHeader
+                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Action
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <AddUserModal
-          isOpen={openModal}
-          isEdit={isEdit}
-          onClose={handleCancel}
-          user={user}
-          handleSubmit={(data) => handleAddUser(data)}
-        />
-        <CustomModalAlert
-          type="success"
-          isOpen={isSuccess}
-          title="Successful"
-          description={message || "User added successfully."}
-          onClose={() => setIsSuccess(false)}
-        />
-        <CustomModalAlert
-          type="warning"
-          isOpen={!!errorMessage}
-          title="Oops..!"
-          description={errorMessage || "An error occurred during sign up."}
-          onClose={() => {
-            setErrorMessage(null);
-            setOpenModal(true);
-          }}
-        />
-        <CustomConfirmModal
-          isOpen={openConfirmModal}
-          onClose={() => setOpenConfirmModal(false)}
-          confirmText="Delete"
-          cancelText="Cancel"
-          title="Are you sure?"
-          message="Do you really want to delete this user?"
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setOpenConfirmModal(false)}
-        />
+            </TableHeader>
+
+            {/* Table Body */}
+            <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {users?.data?.map((user) => (
+                <TableRow key={user._id} className="">
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    {user.full_name}
+                  </TableCell>
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    {user.email}
+                  </TableCell>
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <Badge
+                      size="sm"
+                      color={user.role === "admin" ? "primary" : "info"}
+                    >
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Switch
+                        defaultChecked={user.is_active === 1}
+                        onChange={() => handleToggleChange(user._id)}
+                        label={""}
+                      />
+                      <Badge
+                        size="sm"
+                        color={user.is_active === 1 ? "success" : "warning"}
+                      >
+                        {user.is_active === 1 ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    {user.role !== "admin" && (
+                      <div className="flex items-center gap-3">
+                        <button className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                          <EditIcon
+                            className="inline h-4 w-4 stroke-[2.5]"
+                            onClick={() => handleEditUser(user._id)}
+                          />
+                        </button>
+                        <button
+                          className="text-error-500 hover:text-error-600 dark:text-error-400"
+                          onClick={() => openDeleteModal(user._id)}
+                        >
+                          <TrashIcon className="inline h-4 w-4 stroke-[2.5]" />
+                        </button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <AddUserModal
+            isOpen={openModal}
+            isEdit={isEdit}
+            onClose={handleCancel}
+            user={user}
+            handleSubmit={(data) => handleAddUser(data)}
+          />
+          <CustomModalAlert
+            type="success"
+            isOpen={isSuccess}
+            title="Successful"
+            description={message || "User added successfully."}
+            onClose={() => setIsSuccess(false)}
+          />
+          <CustomModalAlert
+            type="warning"
+            isOpen={!!errorMessage}
+            title="Oops..!"
+            description={errorMessage || "An error occurred during sign up."}
+            onClose={() => {
+              setErrorMessage(null);
+              setOpenModal(true);
+            }}
+          />
+          <CustomConfirmModal
+            isOpen={openConfirmModal}
+            onClose={() => setOpenConfirmModal(false)}
+            confirmText="Delete"
+            cancelText="Cancel"
+            title="Are you sure?"
+            message="Do you really want to delete this user?"
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setOpenConfirmModal(false)}
+          />
+        </div>
       </div>
     </div>
   );

@@ -29,8 +29,6 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
-  console.log("user:", user?.role);
-
   const handleLogout = async () => {
     try {
       await logout().unwrap();

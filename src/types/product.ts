@@ -1,26 +1,12 @@
-export interface ProductRequest {
-  status: string;
-  message: string;
-  data: Product;
-}
-
-export interface Product {
-  name: string;
-  price: number;
-  description: string;
-  image_url: string;
-  category: string;
-  tags: any[];
-  _id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  __v: number;
-}
-
-export interface ProductResponse {
+export interface ProductGetAllResponse {
   status: string;
   data: Products[];
   count: number;
+}
+export interface ProductResponse {
+  status: string;
+  message: string;
+  data: Products[];
 }
 
 export interface Products {
@@ -47,24 +33,33 @@ export interface ProductQueryParams {
   tags?: string[];
 }
 export interface TagResponse {
-    status: string;
-    data:   Tags[];
+  status: string;
+  data: Tags[];
 }
 export interface Tags {
-    _id:  string;
-    name: string;
-    __v:  number;
+  _id: string;
+  name: string;
+  __v: number;
 }
 
 export interface CategoryResponse {
-    status: string;
-    data:   Categories[];
+  status: string;
+  data: Categories[];
 }
 
 export interface Categories {
-    _id:        string;
-    name:       string;
-    __v:        number;
-    createdAt?: Date;
-    updatedAt?: Date;
+  _id: string;
+  name: string;
+  __v: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface ProductRequest {
+  name: string;
+  price: number;
+  discount: number;
+  image_url: File | null;
+  category: string;
+  tags: string[];
 }

@@ -1,6 +1,8 @@
 import {
   CategoryResponse,
+  ProductGetAllResponse,
   ProductQueryParams,
+  ProductRequest,
   ProductResponse,
   TagResponse,
 } from "@/types/product";
@@ -21,7 +23,7 @@ export const productApi = createApi({
   }),
   tagTypes: ["Product"],
   endpoints: (builder) => ({
-    getProducts: builder.query<ProductResponse, ProductQueryParams>({
+    getProducts: builder.query<ProductGetAllResponse, ProductQueryParams>({
       query: ({ limit = 10, skip = 0, q = "", category = "", tags = [] }) => ({
         url: "api/products",
         params: { limit, skip, category, q, tags },
@@ -38,8 +40,19 @@ export const productApi = createApi({
         url: "api/categories",
       }),
     }),
+    createProduct: builder.mutation<ProductResponse, FormData>({
+      query: (body) => ({
+        url: "api/products",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useGetProductsQuery, useGetCategoriesQuery, useGetTagsQuery } =
-  productApi;
+export const {
+  useGetProductsQuery,
+  useGetCategoriesQuery,
+  useGetTagsQuery,
+  useCreateProductMutation,
+} = productApi;

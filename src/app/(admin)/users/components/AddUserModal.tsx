@@ -85,7 +85,7 @@ export default function AddUserModal({
     <Modal
       isOpen={isOpen}
       onClose={() => {}}
-      className="max-w-[584px] p-5 lg:p-10"
+      className="max-w-1/2 p-5 lg:p-10"
       showCloseButton={false}
     >
       <form className="">
