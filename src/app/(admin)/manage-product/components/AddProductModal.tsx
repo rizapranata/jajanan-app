@@ -40,7 +40,7 @@ export default function AddProductModal({
   const [discount, setDiscount] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
   const [imageUpdate, setImageUpdate] = useState<string>("");
-  const [selectedTags, setSelectedTags] = useState<string[]>();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [displayValue, setDisplayValue] = useState<string>("");
 
   useEffect(() => {
@@ -71,9 +71,10 @@ export default function AddProductModal({
       price !== 0 &&
       name.trim() !== "" &&
       category.trim() !== "" &&
+      selectedTags.length > 0 &&
       (isEdit ? true : file !== undefined)
     );
-  }, [price, name, category, discount, isEdit]);
+  }, [price, name, category, discount, selectedTags, isEdit]);
 
   if (!isOpen) return null;
 
@@ -121,7 +122,7 @@ export default function AddProductModal({
       name,
       price,
       category,
-      tags: selectedTags ?? [],
+      tags: selectedTags,
       discount,
       image_url: file,
     });

@@ -124,11 +124,9 @@ export default function ProductTable() {
         payload.append("image", image_url);
       }
 
-      Array.isArray(tags)
-        ? tags.forEach((tag) => {
-            payload.append("tags", tag);
-          })
-        : [];
+      tags.forEach((tag) => {
+        payload.append("tags", tag);
+      });
 
       payload.append("name", name);
       payload.append("price", price.toString());
