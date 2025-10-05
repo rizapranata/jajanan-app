@@ -1,8 +1,8 @@
 import {
   CategoryResponse,
+  ProductDetailResponse,
   ProductGetAllResponse,
   ProductQueryParams,
-  ProductRequest,
   ProductResponse,
   TagResponse,
 } from "@/types/product";
@@ -47,12 +47,39 @@ export const productApi = createApi({
         body,
       }),
     }),
+    getDetailById: builder.query<ProductDetailResponse, string>({
+      query: (id) => `api/products/${id}`,
+      providesTags: ["Product"],
+    }),
+    deleteProduct: builder.mutation<{ message: string; error: number }, string>(
+      {
+        query: (id) => ({
+          url: `api/products/${id}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Product"],
+      }
+    ),
+    updateProduct: builder.mutation<
+      ProductResponse,
+      { id: string; body: FormData }
+    >({
+      query: ({ id, body }) => ({
+        url: `api/products/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
 export const {
+  useGetTagsQuery,
   useGetProductsQuery,
   useGetCategoriesQuery,
-  useGetTagsQuery,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
   useCreateProductMutation,
+  useLazyGetDetailByIdQuery,
 } = productApi;

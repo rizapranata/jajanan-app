@@ -11,9 +11,12 @@ import Image from "next/image";
 import { useState } from "react";
 import {
   useCreateProductMutation,
+  useDeleteProductMutation,
   useGetCategoriesQuery,
   useGetProductsQuery,
   useGetTagsQuery,
+  useLazyGetDetailByIdQuery,
+  useUpdateProductMutation,
 } from "@/store/product/productApi";
 import Pagination from "@/components/tables/Pagination";
 import Badge from "@/components/ui/badge/Badge";
@@ -26,20 +29,25 @@ import Button from "@/components/ui/button/Button";
 import AddProductModal from "./AddProductModal";
 import { ProductRequest } from "@/types/product";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
+import { formatRupiah } from "@/utils/globalFunction";
 
 export default function ProductTable() {
   const [page, setPage] = useState(1);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [isEdit, setIsEdit] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string>("");
   const [selectedTag, setSelectedTags] = useState<string[]>();
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [deletProductId, setDeleteProductId] = useState<string>("");
 
   const [createProduct] = useCreateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
+  const [updateProduct] = useUpdateProductMutation();
+  const [trigerGetProduct, { data: productById }] = useLazyGetDetailByIdQuery();
 
   const { data: categories } = useGetCategoriesQuery();
   const { data: tags } = useGetTagsQuery();
@@ -73,13 +81,19 @@ export default function ProductTable() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading users</div>;
 
-  const handleEditProduct = (productId: string) => {};
+  const handleEditProduct = async (productId: string) => {
+    trigerGetProduct(productId);
+    setOpenModal(true);
+    setIsEdit(true);
+  };
 
   const openDeleteModal = (productId: string) => {
+    setDeleteProductId(productId);
     setOpenConfirmModal(true);
   };
 
   const handleConfirmDelete = () => {
+    deleteProduct(deletProductId);
     setOpenConfirmModal(false);
   };
 
@@ -102,28 +116,45 @@ export default function ProductTable() {
 
   const handleAddProduct = async (dataProdact: ProductRequest) => {
     try {
-      const { name, price, category, image_url, discount, tags } =
-        dataProdact;
       const payload = new FormData();
+      const productId = productById?.data._id;
+      const { name, price, category, image_url, discount, tags } = dataProdact;
+
       if (image_url instanceof File) {
         payload.append("image", image_url);
       }
 
-      tags.forEach((tag) => {
-        payload.append("tags", tag);
-      });
+      Array.isArray(tags)
+        ? tags.forEach((tag) => {
+            payload.append("tags", tag);
+          })
+        : [];
 
       payload.append("name", name);
       payload.append("price", price.toString());
       payload.append("category", category);
       payload.append("discount", discount.toString());
 
-      const { data, status, message } = await createProduct(payload).unwrap();
+      if (isEdit) {
+        if (!productId) {
+          setErrorMessage("Product ID is missing for update.");
+          return;
+        }
+        const { data, status, message } = await updateProduct({
+          id: productId,
+          body: payload,
+        }).unwrap();
+        if (status !== "success") return;
 
-      if (status !== "success") return;
-      setSuccessMessage(message);
-      setIsSuccess(true);
-      console.log("message:", message);
+        setSuccessMessage(message);
+        setIsSuccess(true);
+      } else {
+        const { data, status, message } = await createProduct(payload).unwrap();
+        if (status !== "success") return;
+
+        setSuccessMessage(message);
+        setIsSuccess(true);
+      }
     } catch (error) {
       const { data } = error as any;
       setErrorMessage(data?.message || "Failed to add product");
@@ -240,23 +271,23 @@ export default function ProductTable() {
                               {product.name}
                             </p>
                             <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                              {product.price}
+                              {formatRupiah(product.price)}
                             </span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {product.discount}
+                      {product.discount}%
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {product.category.name}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {product.price}
+                      {formatRupiah(product.price)}
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <div className="flex flex-nowrap max-w-32 gap-3">
+                      <div className="flex flex-wrap max-w-32 gap-3">
                         {product.tags.map((tag) => (
                           <Badge key={tag._id} size="sm" color="success">
                             {tag.name}
@@ -283,11 +314,15 @@ export default function ProductTable() {
                   </TableRow>
                 ))
               ) : (
-                <div className="flex mx-auto">
-                  <h3 className="text-sm font-normal text-gray-800 dark:text-gray-400">
-                    Product empty..
-                  </h3>
-                </div>
+                <TableRow>
+                  <TableCell>
+                    <div className="flex mx-auto">
+                      <h3 className="text-sm font-normal text-gray-800 dark:text-gray-400">
+                        Product empty..
+                      </h3>
+                    </div>
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
@@ -303,6 +338,7 @@ export default function ProductTable() {
             isEdit={isEdit}
             tags={tags ?? { status: "", data: [] }}
             categories={categories ?? { status: "", data: [] }}
+            product={productById}
             onClose={handleCancel}
             onSubmit={(data) => handleAddProduct(data)}
           />

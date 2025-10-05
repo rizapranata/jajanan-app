@@ -13,7 +13,7 @@ export interface Products {
   _id: string;
   price: number;
   discount: number;
-  tags: Category[];
+  tags: Tags[];
   name: string;
   category: Category;
   image_url: string;
@@ -62,4 +62,21 @@ export interface ProductRequest {
   image_url: File | null;
   category: string;
   tags: string[];
+}
+
+export interface ProductDetailResponse {
+  satatus: string;
+  message: string;
+  data: Product;
+}
+
+export interface Product {
+  _id: string;
+  price: number;
+  discount: number;
+  tags: string[];
+  name: string;
+  category: string;
+  image_url: string;
+  __v: number;
 }

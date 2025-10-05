@@ -1,19 +1,25 @@
 import FileInput from "@/components/form/input/FileInput";
 import Input from "@/components/form/input/InputField";
-import TextArea from "@/components/form/input/TextArea";
 import Label from "@/components/form/Label";
 import MultiSelect from "@/components/form/MultiSelect";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { CategoryResponse, ProductRequest, TagResponse } from "@/types/product";
-import { ChangeEvent, useMemo, useState } from "react";
+import {
+  CategoryResponse,
+  ProductRequest,
+  ProductDetailResponse,
+  TagResponse,
+} from "@/types/product";
+import { formatRupiahTyping } from "@/utils/globalFunction";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 interface AddProductProps {
   isOpen: boolean;
   isEdit: boolean;
   tags: TagResponse;
   categories: CategoryResponse;
+  product?: ProductDetailResponse;
   onClose: () => void;
   onSubmit: (data: ProductRequest) => void;
 }
@@ -23,15 +29,81 @@ export default function AddProductModal({
   isEdit,
   tags,
   categories,
+  product,
   onClose,
   onSubmit,
 }: AddProductProps) {
-  const [price, setPrice] = useState(0);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [price, setPrice] = useState<number>(0);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>();
   const [file, setFile] = useState<File | null>(null);
-  const [discount, setDiscount] = useState(0);
+  const [discount, setDiscount] = useState<number>(0);
+  const [category, setCategory] = useState<string>("");
+  const [imageUpdate, setImageUpdate] = useState<string>("");
+  const [selectedTags, setSelectedTags] = useState<string[]>();
+  const [displayValue, setDisplayValue] = useState<string>("");
+
+  useEffect(() => {
+    if (product && isEdit) {
+      const { price, name, tags, image_url, discount, category } = product.data;
+      const tagsEdit = initTagsEdit(tags);
+
+      setName(name);
+      setPrice(price);
+      setSelectedTags(tagsEdit);
+      setImageUpdate(image_url);
+      setCategory(category);
+      setDiscount(discount);
+      setDisplayValue(formatRupiahTyping(price.toString())); // format rupiah untuk input
+    } else {
+      resetForm();
+    }
+  }, [product, isEdit, isOpen, tags.data]);
+
+  function initTagsEdit(tagIds: string[]): string[] {
+    if (!Array.isArray(tags.data) || tags.data.length === 0) return [];
+    const dataTags = tags.data.filter((data) => tagIds.includes(data._id));
+    return dataTags.map((data) => data.name);
+  }
+
+  const isFormValid = useMemo(() => {
+    return (
+      price !== 0 &&
+      name.trim() !== "" &&
+      category.trim() !== "" &&
+      (isEdit ? true : file !== undefined)
+    );
+  }, [price, name, category, discount, isEdit]);
+
+  if (!isOpen) return null;
+
+  const onChangeFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    setFile(null);
+    if (e.target.files && e.target.files.length > 0) {
+      const imageFile: File = e.target.files[0];
+      setFile(imageFile);
+    }
+  };
+
+  const handleChangePrice = (e: ChangeEvent<HTMLInputElement>) => {
+    const rawInput = e.target.value;
+    const numericString = rawInput.replace(/\D/g, ""); // ambil angka saja
+    const number = parseInt(numericString, 10) || 0;
+
+    setPrice(number); // angka mentah (200000)
+    setDisplayValue(formatRupiahTyping(rawInput)); // format rupiah untuk input
+  };
+
+  function resetForm() {
+    setPrice(0);
+    setName("");
+    setFile(null);
+    setDiscount(0);
+    setCategory("");
+    setImageUpdate("");
+    setSelectedTags([]);
+    setDisplayValue("");
+  }
 
   const tagsData = tags?.data.map((tag) => ({
     value: tag.name,
@@ -43,32 +115,6 @@ export default function AddProductModal({
     value: cat._id,
     label: cat.name,
   }));
-
-  const resetForm = () => {
-    setPrice(0);
-    setName("");
-    setSelectedTags([]);
-    setFile(null);
-    setDiscount(0);
-  };
-
-  const isFormValid = useMemo(() => {
-    return (
-      price !== 0 &&
-      name.trim() !== "" &&
-      category.trim() !== "" &&
-      file !== undefined
-    );
-  }, [price, name, category, discount]);
-
-  if (!isOpen) return null;
-
-  const onChangeFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const imageFile: File = e.target.files[0];
-      setFile(imageFile);
-    }
-  };
 
   const handleSubmit = () => {
     onSubmit({
@@ -91,6 +137,11 @@ export default function AddProductModal({
     setSelectedTags(value);
   };
 
+  const handleCancelButton = () => {
+    resetForm();
+    onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -109,7 +160,7 @@ export default function AddProductModal({
             <Input
               type="text"
               placeholder="popcorn"
-              // value={}
+              value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
@@ -117,10 +168,10 @@ export default function AddProductModal({
           <div className="col-span-1">
             <Label>Price</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="Rp. 2000"
-              // value={}
-              onChange={(e) => setPrice(Number(e.target.value))}
+              value={displayValue}
+              onChange={handleChangePrice}
             />
           </div>
 
@@ -132,6 +183,7 @@ export default function AddProductModal({
               className="mt-1 block w-full rounded-md border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
               options={categoryData}
               initValue={category}
+              defaultValue={category}
               onChange={handleSelectChange}
             />
           </div>
@@ -141,6 +193,7 @@ export default function AddProductModal({
             <MultiSelect
               label={""}
               options={tagsData ?? []}
+              defaultSelected={selectedTags}
               onChange={handleSelectTags}
             />
           </div>
@@ -148,7 +201,7 @@ export default function AddProductModal({
           <div className="col-span-1">
             <Label>Image</Label>
             <FileInput
-              // value={}
+              // value={imageUpdate}
               onChange={onChangeFileHandler}
             />
           </div>
@@ -156,11 +209,23 @@ export default function AddProductModal({
           <div className="col-span-1 ">
             <Label>Discount</Label>
             <Input
+              type="number"
               placeholder="20%"
-              // value={discount}
+              value={discount.toString()}
               onChange={(e) => setDiscount(Number(e.target.value))}
             />
           </div>
+
+          {imageUpdate && (
+            <div className="col-span-1">
+              <p>Preview:</p>
+              <img
+                src={`${baseUrl}/uploads/${imageUpdate}`}
+                alt="preview"
+                className="w-40 h-40 object-cover rounded"
+              />
+            </div>
+          )}
 
           {file && (
             <div className="col-span-1">
@@ -175,7 +240,7 @@ export default function AddProductModal({
         </div>
 
         <div className="flex items-center justify-end w-full gap-3 mt-6">
-          <Button size="sm" variant="outline" onClick={onClose}>
+          <Button size="sm" variant="outline" onClick={handleCancelButton}>
             Close
           </Button>
           <Button size="sm" disabled={!isFormValid} onClick={handleSubmit}>
