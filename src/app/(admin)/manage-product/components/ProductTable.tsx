@@ -6,7 +6,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "../../../../components/ui/table";
+} from "@/components/ui/table";
 import Image from "next/image";
 import { useState } from "react";
 import {

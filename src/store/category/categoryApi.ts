@@ -21,6 +21,7 @@ export const categoryApi = createApi({
       query: () => ({
         url: "api/categories",
       }),
+      providesTags: ["Category"],
     }),
     createCategory: builder.mutation<CategoryResponse, CategoryRequest>({
       query: (body) => ({
@@ -28,6 +29,7 @@ export const categoryApi = createApi({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Category"],
     }),
     deleteCategory: builder.mutation<
       { message: string; error: number },
@@ -37,7 +39,7 @@ export const categoryApi = createApi({
         url: `api/categories/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "Category", id: "LIST" }],
+      invalidatesTags: ["Category"],
     }),
   }),
 });

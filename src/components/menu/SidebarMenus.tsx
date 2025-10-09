@@ -1,11 +1,10 @@
 // sidebarMenus.ts
 export type Role = "guest" | "user" | "admin";
-import { CalenderIcon, GridIcon, PlugInIcon, UserCircleIcon } from "@/icons";
+import { GridIcon, UserCircleIcon } from "@/icons";
 import {
   ClipboardListIcon,
-  HomeIcon,
-  LogInIcon,
   PackageIcon,
+  Hamburger,
   ShoppingCartIcon,
 } from "lucide-react";
 
@@ -18,15 +17,28 @@ type NavItem = {
 
 export const SidebarMenus: Record<Role, NavItem[]> = {
   admin: [
-    // {
-    //   icon: <GridIcon />,
-    //   name: "Dashboard",
-    //   path: "/dashboard",
-    // },
     {
-      icon: <CalenderIcon />,
+      icon: <GridIcon />,
+      name: "Dashboard",
+      path: "/",
+    },
+    {
+      icon: <Hamburger />,
       name: "Manage Products",
-      path: "/manage-product",
+      subItems: [
+        {
+          name: "Product",
+          path: "/manage-product",
+        },
+        {
+          name: "Category",
+          path: "/category",
+        },
+        {
+          name: "Tag",
+          path: "/tag",
+        },
+      ],
     },
     {
       icon: <UserCircleIcon />,

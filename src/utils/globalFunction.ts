@@ -21,3 +21,14 @@ export function formatPercent(num: string | number): string {
   if (isNaN(number)) return "";
   return number + " %";
 }
+
+export function formatDateTime(
+  dateString: string | undefined
+): string | undefined {
+  if (dateString === undefined) return;
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
