@@ -15,11 +15,12 @@ import {
   useGetCategoriesQuery,
 } from "@/store/category/categoryApi";
 import { EditIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomConfirmModal from "@/components/modals/CustomConfirmModal";
 import AddCategoryModal from "./AddCategoryModal";
 import { CategoryRequest } from "@/types/category";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
+import Alert from "@/components/ui/alert/Alert";
 
 export default function CategoryTable() {
   const { data: categories, isLoading, error } = useGetCategoriesQuery();
@@ -32,11 +33,20 @@ export default function CategoryTable() {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [isOpenAlert, isSetOpenAlert] = useState(false);
 
   const [deleCategory] = useDeleteCategoryMutation();
   const [createCategory] = useCreateCategoryMutation();
 
+  useEffect(() => {
+    if (isOpenAlert) {
+      const timer = setTimeout(() => isSetOpenAlert(false), 3000);
+      return () => clearTimeout(timer); // bersihkan jika unmount
+    }
+  }, [isOpenAlert]);
+
   const handleEditCategory = (id: string) => {
+    isSetOpenAlert(true);
     console.log("Category id:", id);
   };
 
@@ -73,6 +83,15 @@ export default function CategoryTable() {
 
   return (
     <div>
+      <div className="pb-3">
+        {isOpenAlert && (
+          <Alert
+            variant={"warning"}
+            title={"Oops.."}
+            message={"Feature edit belum tersedia!"}
+          />
+        )}
+      </div>
       <div className="flex justify-between">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Category Management
@@ -107,13 +126,13 @@ export default function CategoryTable() {
               <TableRow>
                 <TableCell
                   isHeader
-                  className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="py-3 md:px-5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Name
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400"
+                  className="py-3 md:px-5 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400"
                 >
                   Actions
                 </TableCell>
@@ -123,10 +142,10 @@ export default function CategoryTable() {
               {categories?.data && categories.data.length > 0 ? (
                 categories.data.map((category) => (
                   <TableRow key={category._id} className="">
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="py-3 md:px-5 text-gray-500 text-theme-sm dark:text-gray-400">
                       {category.name}
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="py-3 md:px-5 text-gray-500 text-theme-sm dark:text-gray-400">
                       <div className="flex items-center gap-3 justify-end">
                         <button className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                           <EditIcon

@@ -1,27 +1,25 @@
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { CreateUserRequest, DetailUserResponse } from "@/types/auth";
-import { CategoryRequest, CategoryResponse } from "@/types/category";
+import { TagCreateRequest, TagResponse } from "@/types/tag";
 import { useEffect, useMemo, useState } from "react";
 
-interface AddCategoryProps {
+interface AddTagProps {
   isOpen: boolean;
   isEdit: boolean;
-  category?: CategoryResponse; // jika ada → edit mode
+  tag?: TagResponse; // jika ada → edit mode
   onClose: () => void;
-  handleSubmit: (data: CategoryRequest) => void;
+  handleSubmit: (data: TagCreateRequest) => void;
 }
 
-export default function AddCategoryModal({
+export default function AddTagModal({
   isOpen,
   isEdit,
-  category,
+  tag,
   onClose,
   handleSubmit,
-}: AddCategoryProps) {
+}: AddTagProps) {
   const [name, setName] = useState("");
 
   const resetForm = () => {
@@ -51,12 +49,12 @@ export default function AddCategoryModal({
     >
       <form className="">
         <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
-          {isEdit ? "Edit Category" : "Add Category"}
+          {isEdit ? "Edit Tag" : "Add Tag"}
         </h4>
 
         <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
           <div className="col-span-1 sm:col-span-2">
-            <Label>Category Name</Label>
+            <Label>Tag Name</Label>
             <Input
               type="text"
               className="mt-1 block w-full rounded-md border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
@@ -72,7 +70,7 @@ export default function AddCategoryModal({
             Close
           </Button>
           <Button size="sm" disabled={!isFormValid} onClick={onSubmit}>
-            {isEdit ? "Update Category" : "Save Category"}
+            {isEdit ? "Update Tag" : "Save Tag"}
           </Button>
         </div>
       </form>
