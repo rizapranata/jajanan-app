@@ -11,7 +11,7 @@ import {
   ProductDetailResponse,
   TagResponse,
 } from "@/types/product";
-import { formatRupiahTyping } from "@/utils/globalFunction";
+import { formatPercent, formatRupiahTyping } from "@/utils/globalFunction";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 interface AddProductProps {
@@ -34,14 +34,15 @@ export default function AddProductModal({
   onSubmit,
 }: AddProductProps) {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [name, setName] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
-  const [name, setName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [discount, setDiscount] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
   const [imageUpdate, setImageUpdate] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [displayValue, setDisplayValue] = useState<string>("");
+  const [isDiscountValid, setIsDiscountValid] = useState<boolean>(false);
 
   useEffect(() => {
     if (product && isEdit) {
@@ -54,7 +55,6 @@ export default function AddProductModal({
       setImageUpdate(image_url);
       setCategory(category);
       setDiscount(discount);
-      setDisplayValue(formatRupiahTyping(price.toString())); // format rupiah untuk input
     } else {
       resetForm();
     }
@@ -72,6 +72,7 @@ export default function AddProductModal({
       name.trim() !== "" &&
       category.trim() !== "" &&
       selectedTags.length > 0 &&
+      checkPersent(discount) !== true &&
       (isEdit ? true : file !== undefined)
     );
   }, [price, name, category, discount, selectedTags, isEdit]);
@@ -95,6 +96,18 @@ export default function AddProductModal({
     setDisplayValue(formatRupiahTyping(rawInput)); // format rupiah untuk input
   };
 
+  const handleChangeDiscount = (e: ChangeEvent<HTMLInputElement>) => {
+    const rawInput = e.target.value;
+    const number = parseInt(rawInput, 10) || 0;
+
+    setDiscount(number);
+    setIsDiscountValid(checkPersent(number));
+  };
+
+  function checkPersent(num: number): boolean {
+    return num > 100 || num < 0;
+  }
+
   function resetForm() {
     setPrice(0);
     setName("");
@@ -104,6 +117,7 @@ export default function AddProductModal({
     setImageUpdate("");
     setSelectedTags([]);
     setDisplayValue("");
+    setIsDiscountValid(false);
   }
 
   const tagsData = tags?.data.map((tag) => ({
@@ -208,12 +222,14 @@ export default function AddProductModal({
           </div>
 
           <div className="col-span-1 ">
-            <Label>Discount</Label>
+            <Label>Discount %</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="20%"
+              error={isDiscountValid}
               value={discount.toString()}
-              onChange={(e) => setDiscount(Number(e.target.value))}
+              hint="Discount not greather than 100 and less than 0"
+              onChange={handleChangeDiscount}
             />
           </div>
 

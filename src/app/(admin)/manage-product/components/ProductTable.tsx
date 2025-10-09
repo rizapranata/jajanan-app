@@ -12,7 +12,6 @@ import { useState } from "react";
 import {
   useCreateProductMutation,
   useDeleteProductMutation,
-  useGetCategoriesQuery,
   useGetProductsQuery,
   useGetTagsQuery,
   useLazyGetDetailByIdQuery,
@@ -27,9 +26,10 @@ import Select from "@/components/form/Select";
 import MultiSelect from "@/components/form/MultiSelect";
 import Button from "@/components/ui/button/Button";
 import AddProductModal from "./AddProductModal";
-import { ProductRequest } from "@/types/product";
 import CustomModalAlert from "@/components/modals/CustomModalAlert";
+import { ProductRequest } from "@/types/product";
 import { formatRupiah } from "@/utils/globalFunction";
+import { useGetCategoriesQuery } from "@/store/category/categoryApi";
 
 export default function ProductTable() {
   const [page, setPage] = useState(1);
@@ -38,7 +38,7 @@ export default function ProductTable() {
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [category, setCategory] = useState<string>("");
-  const [selectedTag, setSelectedTags] = useState<string[]>();
+  const [selectedTag, setSelectedTags] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -198,6 +198,7 @@ export default function ProductTable() {
           <MultiSelect
             label={""}
             options={tagsData ?? []}
+            defaultSelected={selectedTag}
             onChange={handleMultipleSelect}
           />
         </div>

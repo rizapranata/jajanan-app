@@ -13,3 +13,11 @@ export function formatRupiahTyping(num: string | number): string {
   if (isNaN(number)) return "";
   return "Rp. " + number.toLocaleString("id-ID");
 }
+
+export function formatPercent(num: string | number): string {
+  if (!num) return "";
+  const number =
+    typeof num === "string" ? parseInt(num.replace(/\D/g, ""), 10) : num;
+  if (isNaN(number)) return "";
+  return number + " %";
+}

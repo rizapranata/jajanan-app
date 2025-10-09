@@ -44,11 +44,6 @@ export const productApi = createApi({
         url: "api/tags",
       }),
     }),
-    getCategories: builder.query<CategoryResponse, void>({
-      query: () => ({
-        url: "api/categories",
-      }),
-    }),
     createProduct: builder.mutation<ProductResponse, FormData>({
       query: (body) => ({
         url: "api/products",
@@ -90,7 +85,6 @@ export const productApi = createApi({
 export const {
   useGetTagsQuery,
   useGetProductsQuery,
-  useGetCategoriesQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useCreateProductMutation,
