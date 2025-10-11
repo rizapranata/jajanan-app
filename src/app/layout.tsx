@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     icon: [
       {
         rel: "icon",
-        url: "/images/logo/logo-food.png",
+        url: "/images/logo/jajanan-icon-blue.png",
         sizes: "42x42",
         type: "image/png",
       },
