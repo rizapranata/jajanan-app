@@ -1,4 +1,5 @@
 import {
+  ChangePasswordRequest,
   LoginRequest,
   LoginResponse,
   ProfileUserResponse,
@@ -46,6 +47,16 @@ export const authApi = createApi({
         url: "/me",
       }),
     }),
+    changePassword: builder.mutation<
+      { status: string; message: string },
+      ChangePasswordRequest
+    >({
+      query: (body) => ({
+        url: "/change-password",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -53,5 +64,6 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useLogoutMutation,
-  useProfileQuery
+  useChangePasswordMutation,
+  useProfileQuery,
 } = authApi;

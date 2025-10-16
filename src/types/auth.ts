@@ -129,3 +129,8 @@ export interface ProfileUserResponse {
     iat: number;
   };
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

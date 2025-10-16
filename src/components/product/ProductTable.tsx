@@ -12,7 +12,6 @@ import Image from "next/image";
 import { useGetProductsQuery } from "@/store/product/productApi";
 import { useState } from "react";
 import Pagination from "../tables/Pagination";
-import { count } from "console";
 
 export default function ProductTable() {
   const [page, setPage] = useState(1);

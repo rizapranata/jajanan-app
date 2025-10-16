@@ -1,5 +1,6 @@
 import FileInput from "@/components/form/input/FileInput";
 import Input from "@/components/form/input/InputField";
+import InputFieldIcon from "@/components/form/input/InputFieldIcon";
 import Label from "@/components/form/Label";
 import MultiSelect from "@/components/form/MultiSelect";
 import Select from "@/components/form/Select";
@@ -12,6 +13,7 @@ import {
   TagResponse,
 } from "@/types/product";
 import { formatPercent, formatRupiahTyping } from "@/utils/globalFunction";
+import { Percent } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 interface AddProductProps {
@@ -53,6 +55,7 @@ export default function AddProductModal({
       setPrice(price);
       setSelectedTags(tagsEdit);
       setImageUpdate(image_url);
+      setDisplayValue(formatRupiahTyping(price));
       setCategory(category);
       setDiscount(discount);
     } else {
@@ -161,7 +164,7 @@ export default function AddProductModal({
     <Modal
       isOpen={isOpen}
       onClose={() => {}}
-      className="max-w-1/2 p-5 lg:p-10"
+      className="lg:max-w-1/2 p-5 lg:p-10"
       showCloseButton={false}
     >
       <form className="">
@@ -221,14 +224,21 @@ export default function AddProductModal({
             />
           </div>
 
-          <div className="col-span-1 ">
-            <Label>Discount %</Label>
-            <Input
+          <div className="col-span-1">
+            <Label>
+              {!isDiscountValid ? (
+                `Discount %`
+              ) : (
+                <span className="text-error-500 text-sm">{`Discount not greather than 100%`}</span>
+              )}
+            </Label>
+            <InputFieldIcon
               type="text"
+              start={false}
               placeholder="20%"
+              icon={<Percent />}
               error={isDiscountValid}
               value={discount.toString()}
-              hint="Discount not greather than 100 and less than 0"
               onChange={handleChangeDiscount}
             />
           </div>
