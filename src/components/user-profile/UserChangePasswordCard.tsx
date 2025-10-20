@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Alert from "../ui/alert/Alert";
 import CustomModalAlert from "../modals/CustomModalAlert";
@@ -42,7 +41,11 @@ export default function UserChangePasswordCard() {
   }, [isOpenAlert]);
 
   const isFormValid = useMemo(() => {
-    return newPass !== "" && currentPass !== "" && confirmPass !== "";
+    return (
+      newPass.trim() !== "" &&
+      currentPass.trim() !== "" &&
+      confirmPass.trim() !== ""
+    );
   }, [newPass, currentPass, confirmPass]);
 
   const handleSave = async () => {

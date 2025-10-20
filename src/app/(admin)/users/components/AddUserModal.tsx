@@ -32,14 +32,6 @@ export default function AddUserModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const resetForm = () => {
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPassword("");
-    setRole("");
-  };
-
   useEffect(() => {
     if (user && isEdit) {
       const [first, ...lastParts] = user.data.full_name?.split(" ") ?? ["", ""];
@@ -80,6 +72,14 @@ export default function AddUserModal({
   const handleSelectChange = (value: string) => {
     setRole(value);
   };
+
+  function resetForm() {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setPassword("");
+    setRole("");
+  }
 
   return (
     <Modal
